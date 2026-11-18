@@ -1,0 +1,72 @@
+name: Build Custom Meshtastic
+
+on:
+  workflow_dispatch:
+    inputs:
+      meshtastic_tag:
+        description: 'Тег версии Meshtastic (например v2.6.4)'
+        required: true
+        default: 'v2.6.4'
+      board_config:
+        description: 'JSON конфигурация платы'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout builder repo
+        uses: actions/checkout@v4
+
+      - name: Clone Meshtastic firmware
+        run: |
+          git clone --depth 1 --branch "${{ github.event.inputs.meshtastic_tag }}" https://github.com/meshtastic/firmware.git meshtastic-src
+          cd meshtastic-src
+          git submodule update --init --depth 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+            ~/.platformio/packages
+            ~/.platformio/platforms
+          key: ${{ runner.os }}-pio-v2-${{ github.event.inputs.meshtastic_tag }}
+          restore-keys: |
+            ${{ runner.os }}-pio-v2-
+
+      - name: Install PlatformIO
+        run: pip install -U platformio
+
+      - name: Generate custom variant
+        env:
+          BOARD_CONFIG: ${{ github.event.inputs.board_config }}
+        run: python scripts/generate_variant.py
+
+      - name: Compile firmware
+        run: |
+          cd meshtastic-src
+          pio run -e custom_diy_board
+
+      - name: Prepare release files
+        run: |
+          mkdir -p output
+          BUILD_DIR="meshtastic-src/.pio/build/custom_diy_board"
+          cp "$BUILD_DIR"/firmware*.bin output/ 2>/dev/null || true
+          cp "$BUILD_DIR"/firmware*.uf2 output/ 2>/dev/null || true
+          cp "$BUILD_DIR"/firmware*.zip output/ 2>/dev/null || true
+          cp "$BUILD_DIR"/firmware*.hex output/ 2>/dev/null || true
+          cp meshtastic-src/variants/*/custom_diy_board/variant.h output/
+          echo '${{ github.event.inputs.board_config }}' > output/config.json
+
+      - name: Upload Firmware Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: meshtastic-custom-firmware
+          path: output/
