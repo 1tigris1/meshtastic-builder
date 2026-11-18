@@ -105,7 +105,10 @@ if config.get("button_pin"):
 if config.get("led_pin"):
     lines.append(f"#define LED_PIN {config['led_pin']}")
 if config.get("battery_pin"):
-    lines.append(f"#define BATTERY_PIN {config['battery_pin']}")
+    bat_pin = config["battery_pin"]
+    lines.append(f"#define BATTERY_PIN {bat_pin}")
+    if mcu in ("esp32", "esp32s3"):
+        lines.append(f"#define ADC_CHANNEL ADC1_GPIO{bat_pin}_CHANNEL")
     mult = config.get("adc_multiplier") or "2.0"
     lines.append(f"#define ADC_MULTIPLIER {mult}")
 
