@@ -20,7 +20,14 @@ jobs:
 
       - name: Clone Meshtastic firmware
         run: |
-          git clone --depth 1 --branch "${{ github.event.inputs.meshtastic_tag }}" https://github.com/meshtastic/firmware.git meshtastic-src
+          TAG_INPUT="${{ github.event.inputs.meshtastic_tag }}"
+          if [ "$TAG_INPUT" = "latest" ] || [ -z "$TAG_INPUT" ]; then
+            RESOLVED_TAG=$(curl -s https://api.github.com/repos/meshtastic/firmware/releases/latest | jq -r '.tag_name')
+          else
+            RESOLVED_TAG=$(git ls-remote --tags https://github.com/meshtastic/firmware.git "${TAG_INPUT}*" | awk -F'/' '{print $3}' | grep -v '\^{}' | sort -V | tail -n 1)
+          fi
+          echo "Cloning tag: $RESOLVED_TAG"
+          git clone --depth 1 --branch "$RESOLVED_TAG" https://github.com/meshtastic/firmware.git meshtastic-src
           cd meshtastic-src
           git submodule update --init --depth 1
 
