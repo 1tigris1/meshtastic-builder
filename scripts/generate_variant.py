@@ -191,4 +191,11 @@ build_flags =
   -I variants/{arch_dir}/custom_diy_board{extra_build_flags}
 """
 (variant_dir / "platformio.ini").write_text(pio_ini, encoding="utf-8")
+
+# Явно регистрируем наш variant в корневом platformio.ini Meshtastic
+root_pio = Path("meshtastic-src/platformio.ini")
+root_pio_text = root_pio.read_text(encoding="utf-8")
+root_pio_text += f"\n[platformio]\nextra_configs =\n  variants/{arch_dir}/custom_diy_board/platformio.ini\n"
+root_pio.write_text(root_pio_text, encoding="utf-8")
+
 print("Generated variant.h:\n", "\n".join(lines))
