@@ -142,8 +142,13 @@ if radio in ("e22_900", "e22_400", "e220_llcc68", "sx1262"):
     }[radio]
     lines.append(f"#define {chip_macro}")
 
+    if config.get("lora_cs"):
+        lines.append(f"#define SX126X_CS {config['lora_cs']}")
+    if config.get("lora_rst"):
+        lines.append(f"#define SX126X_RESET {config['lora_rst']}")
     if config.get("lora_dio1"):
         lines.append(f"#define LORA_DIO1 {config['lora_dio1']}")
+        lines.append(f"#define SX126X_DIO1 {config['lora_dio1']}")
     if config.get("lora_busy"):
         lines.append(f"#define SX126X_BUSY {config['lora_busy']}")
         lines.append(f"#define LORA_DIO2 {config['lora_busy']}")
