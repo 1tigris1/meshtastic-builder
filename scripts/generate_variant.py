@@ -151,7 +151,6 @@ if radio in ("e22_900", "e22_400", "e220_llcc68", "sx1262"):
         lines.append(f"#define SX126X_DIO1 {config['lora_dio1']}")
     if config.get("lora_busy"):
         lines.append(f"#define SX126X_BUSY {config['lora_busy']}")
-        lines.append(f"#define LORA_DIO2 {config['lora_busy']}")
     if config.get("lora_rxen"):
         lines.append(f"#define SX126X_RXEN {config['lora_rxen']}")
     if config.get("lora_txen"):
