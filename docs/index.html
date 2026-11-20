@@ -77,10 +77,10 @@
       <label id="f_busy">SX126X_BUSY<input id="lora_busy" placeholder="напр. 32" /></label>
       <label id="f_rxen">SX126X_RXEN (для E22)<input id="lora_rxen" placeholder="напр. 14" /></label>
       <label id="f_txen">SX126X_TXEN (для E22)<input id="lora_txen" placeholder="напр. 13" oninput="syncTxenDio2()" /></label>
-      <label id="f_dio2">DIO2 как RF Switch
+      <label id="f_dio2">Управление TXEN (RF Switch)
         <select id="dio2_rf_switch">
-          <option value="0">Нет (ручной TXEN)</option>
-          <option value="1">Да (DIO2 управляет TX)</option>
+          <option value="0">Через GPIO МК (указан пин TXEN)</option>
+          <option value="1">Перемычка DIO2 → TXEN (DIO2 как RF Switch)</option>
         </select>
       </label>
       <label id="f_tcxo">TCXO напряжение (DIO3)
@@ -91,9 +91,9 @@
           <option value="0">0 В (без TCXO)</option>
         </select>
       </label>
-      <label id="f_hp">Мощность модуля
+      <label id="f_hp">Мощность модуля (PA)
         <select id="e22_high_power">
-          <option value="1">1 Вт (E22-30S, ограничивает выход до +22 dBm)</option>
+          <option value="1">1 Вт / 2 Вт (E22-30S / 33S — лимит чипа +22 dBm)</option>
           <option value="0">Стандарт (до 22 dBm / E22-22S)</option>
         </select>
       </label>
@@ -180,6 +180,8 @@
       const txenVal = document.getElementById('lora_txen').value.trim();
       if (txenVal !== '') {
         document.getElementById('dio2_rf_switch').value = '0';
+      } else {
+        document.getElementById('dio2_rf_switch').value = '1';
       }
     }
 
