@@ -151,18 +151,21 @@ if radio in ("e22_900", "e22_400", "e220_llcc68", "sx1262"):
         lines.append(f"#define SX126X_DIO1 {config['lora_dio1']}")
     if config.get("lora_busy"):
         lines.append(f"#define SX126X_BUSY {config['lora_busy']}")
-    if config.get("lora_rxen"):
-        lines.append(f"#define SX126X_RXEN {config['lora_rxen']}")
-    if config.get("lora_txen"):
-        lines.append(f"#define SX126X_TXEN {config['lora_txen']}")
 
-    if config.get("dio2_rf_switch") == "1":
+    rxen = config.get("lora_rxen") or "RADIOLIB_NC"
+    txen = config.get("lora_txen") or "RADIOLIB_NC"
+    lines.append(f"#define SX126X_RXEN {rxen}")
+    lines.append(f"#define SX126X_TXEN {txen}")
+
+    if str(config.get("dio2_rf_switch")).lower() in ("1", "true", "yes"):
         lines.append("#define SX126X_DIO2_AS_RF_SWITCH")
 
-    tcxo = config.get("tcxo_voltage", "1.8")
-    if tcxo and tcxo != "0":
+    tcxo = str(config.get("tcxo_voltage") or "1.8").strip()
+    if tcxo not in ("0", "0.0", "none", "None", "false", "False"):
         lines.append(f"#define SX126X_DIO3_TCXO_VOLTAGE {tcxo}")
 
+    if str(config.get("e22_high_power")).lower() in ("1", "true", "yes"):
+        lines.append("#define SX126X_MAX_POWER 22")
     # Ограничение входной мощности для E22-30S (1W модули с внутренним PA)
     if config.get("e22_high_power") == "1":
         lines.append("#define SX126X_MAX_POWER 22")
