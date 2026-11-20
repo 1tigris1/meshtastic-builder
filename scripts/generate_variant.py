@@ -161,9 +161,12 @@ if radio in ("e22_900", "e22_400", "e220_llcc68", "sx1262"):
     lines.append(f"#define SX126X_RXEN {rxen}")
     lines.append(f"#define SX126X_TXEN {txen}")
 
-    # Если задан физический TXEN или DIO2 явно выключен — запрещаем DIO2_AS_RF_SWITCH
-    dio2_enabled = str(config.get("dio2_rf_switch")).lower() in ("1", "true", "yes")
-    if dio2_enabled and txen == "RADIOLIB_NC":
+    dio2_mode = str(config.get("dio2_rf_switch")).lower()
+    # Если TXEN подключен к GPIO МК — DIO2 отключаем.
+    # Если TXEN не задан на МК, но выбрано управление через DIO2 (перемычка DIO2-TXEN) — включаем DIO2_AS_RF_SWITCH.
+    if txen != "RADIOLIB_NC":
+        lines.append("#undef SX126X_DIO2_AS_RF_SWITCH")
+    elif dio2_mode in ("1", "true", "yes"):
         lines.append("#define SX126X_DIO2_AS_RF_SWITCH")
     else:
         lines.append("#undef SX126X_DIO2_AS_RF_SWITCH")
@@ -173,7 +176,8 @@ if radio in ("e22_900", "e22_400", "e220_llcc68", "sx1262"):
         lines.append(f"#define SX126X_DIO3_TCXO_VOLTAGE {tcxo}")
         lines.append("#define TCXO_OPTIONAL")
 
-    # Ограничение выходной мощности чипа до 22 dBm для 1-ваттных модулей E22-30S
+    # Для модулей E22-30S (1W) и E22-33S (2W) выход чипа SX126x ограничивается до +22 dBm,
+    # чтобы не сжечь вход встроенного усилителя мощности (PA)
     if str(config.get("e22_high_power")).lower() in ("1", "true", "yes"):
         lines.append("#define SX126X_MAX_POWER 22")
 else:
