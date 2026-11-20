@@ -35,7 +35,7 @@
       <label>Владелец (User)<input id="gh_owner" placeholder="username" /></label>
       <label>Репозиторий<input id="gh_repo" value="meshtastic-builder" /></label>
       <label>GitHub Token (PAT)<input id="gh_token" type="password" placeholder="github_pat_..." /></label>
-      <label>Тег Meshtastic<input id="fw_tag" value="v2.6.4" /></label>
+      <label>Тег Meshtastic (или latest)<input id="fw_tag" value="latest" /></label>
     </div>
   </div>
 
@@ -44,8 +44,8 @@
     <div class="grid">
       <label>Семейство чипа
         <select id="mcu" onchange="updateHints()">
-          <option value="esp32s3">ESP32-S3 (N8/N16)</option>
           <option value="esp32">ESP32 (классический)</option>
+          <option value="esp32s3">ESP32-S3 (N8/N16)</option>
           <option value="esp32c3">ESP32-C3</option>
           <option value="esp32c6">ESP32-C6</option>
           <option value="nrf52840">nRF52840 (ProMicro / Nice!Nano)</option>
@@ -60,27 +60,27 @@
     <div class="grid">
       <label>Модель модуля
         <select id="radio" onchange="toggleFields()">
-          <option value="e22_900">Ebyte E22-900M (SX1262, 868/915 МГц)</option>
           <option value="e22_400">Ebyte E22-400M (SX1268, 433 МГц)</option>
+          <option value="e22_900">Ebyte E22-900M (SX1262, 868/915 МГц)</option>
           <option value="e220_llcc68">Ebyte E220-900M/400M (LLCC68)</option>
           <option value="sx1262">SX1262 (Ra-01SH / Wio-SX1262)</option>
           <option value="sx1276">SX1276 / SX1278 (Ra-02)</option>
         </select>
       </label>
-      <label>LORA_SCK<input id="lora_sck" placeholder="напр. 12" /></label>
-      <label>LORA_MISO<input id="lora_miso" placeholder="напр. 13" /></label>
-      <label>LORA_MOSI<input id="lora_mosi" placeholder="напр. 11" /></label>
-      <label>LORA_CS (NSS)<input id="lora_cs" placeholder="напр. 10" /></label>
-      <label>LORA_RESET (NRST)<input id="lora_rst" placeholder="напр. 9" /></label>
+      <label>LORA_SCK<input id="lora_sck" placeholder="напр. 18" /></label>
+      <label>LORA_MISO<input id="lora_miso" placeholder="напр. 19" /></label>
+      <label>LORA_MOSI<input id="lora_mosi" placeholder="напр. 23" /></label>
+      <label>LORA_CS (NSS)<input id="lora_cs" placeholder="напр. 5" /></label>
+      <label>LORA_RESET (NRST)<input id="lora_rst" placeholder="напр. 27" /></label>
       <label id="f_dio0" class="hidden">LORA_DIO0 (IRQ)<input id="lora_dio0" placeholder="напр. 26" /></label>
-      <label id="f_dio1">LORA_DIO1 (IRQ)<input id="lora_dio1" placeholder="напр. 14" /></label>
-      <label id="f_busy">SX126X_BUSY<input id="lora_busy" placeholder="напр. 8" /></label>
-      <label id="f_rxen">SX126X_RXEN (для E22)<input id="lora_rxen" placeholder="пин RXEN" /></label>
-      <label id="f_txen">SX126X_TXEN (для E22)<input id="lora_txen" placeholder="пин TXEN или -1" /></label>
+      <label id="f_dio1">LORA_DIO1 (IRQ)<input id="lora_dio1" placeholder="напр. 33" /></label>
+      <label id="f_busy">SX126X_BUSY<input id="lora_busy" placeholder="напр. 32" /></label>
+      <label id="f_rxen">SX126X_RXEN (для E22)<input id="lora_rxen" placeholder="напр. 14" /></label>
+      <label id="f_txen">SX126X_TXEN (для E22)<input id="lora_txen" placeholder="напр. 13" oninput="syncTxenDio2()" /></label>
       <label id="f_dio2">DIO2 как RF Switch
         <select id="dio2_rf_switch">
-          <option value="1">Да (DIO2 управляет TX)</option>
           <option value="0">Нет (ручной TXEN)</option>
+          <option value="1">Да (DIO2 управляет TX)</option>
         </select>
       </label>
       <label id="f_tcxo">TCXO напряжение (DIO3)
@@ -93,8 +93,8 @@
       </label>
       <label id="f_hp">Мощность модуля
         <select id="e22_high_power">
-          <option value="0">Стандарт (до 22 dBm / E22-22S)</option>
           <option value="1">1 Вт (E22-30S, ограничивает выход до +22 dBm)</option>
+          <option value="0">Стандарт (до 22 dBm / E22-22S)</option>
         </select>
       </label>
     </div>
@@ -123,11 +123,9 @@
         </select>
       </label>
 
-      <!-- I2C пины (для OLED и I2C тача) -->
-      <label class="grp_i2c">I2C_SDA<input id="i2c_sda" placeholder="напр. 17" /></label>
-      <label class="grp_i2c">I2C_SCL<input id="i2c_scl" placeholder="напр. 18" /></label>
+      <label class="grp_i2c">I2C_SDA<input id="i2c_sda" placeholder="напр. 21" /></label>
+      <label class="grp_i2c">I2C_SCL<input id="i2c_scl" placeholder="напр. 22" /></label>
 
-      <!-- SPI TFT / E-Ink пины -->
       <label class="grp_tft hidden">TFT_SCK (SCLK)<input id="tft_sck" placeholder="напр. 36" /></label>
       <label class="grp_tft hidden">TFT_MOSI (SDA)<input id="tft_mosi" placeholder="напр. 35" /></label>
       <label class="grp_tft hidden">TFT_MISO (для XPT2046)<input id="tft_miso" placeholder="опц." /></label>
@@ -138,7 +136,6 @@
       <label class="grp_tft hidden">Ширина (px)<input id="tft_width" value="240" /></label>
       <label class="grp_tft hidden">Высота (px)<input id="tft_height" value="320" /></label>
 
-      <!-- Пины тачскрина -->
       <label class="grp_touch_spi hidden">TOUCH_CS (XPT2046)<input id="touch_cs" placeholder="напр. 41" /></label>
       <label class="grp_touch hidden">TOUCH_INT (IRQ)<input id="touch_int" placeholder="напр. 42" /></label>
       <label class="grp_touch_i2c hidden">TOUCH_RST<input id="touch_rst" placeholder="опц." /></label>
@@ -149,10 +146,10 @@
     <h2>5. Периферия и Дополнительно</h2>
     <div class="grid">
       <label>BUTTON_PIN (Кнопка)<input id="button_pin" placeholder="напр. 0" /></label>
-      <label>LED_PIN (Светодиод)<input id="led_pin" placeholder="напр. 35" /></label>
+      <label>LED_PIN (Светодиод)<input id="led_pin" placeholder="" /></label>
       <label>GPS_RX (к TX модуля)<input id="gps_rx" placeholder="" /></label>
       <label>GPS_TX (к RX модуля)<input id="gps_tx" placeholder="" /></label>
-      <label>BATTERY_PIN (ADC)<input id="battery_pin" placeholder="напр. 1" /></label>
+      <label>BATTERY_PIN (ADC)<input id="battery_pin" placeholder="напр. 36" /></label>
       <label>ADC_MULTIPLIER<input id="adc_multiplier" value="2.0" /></label>
     </div>
     <div style="margin-top: 12px;">
@@ -179,13 +176,20 @@
       'button_pin','led_pin','gps_rx','gps_tx','battery_pin','adc_multiplier','extra_defines'
     ];
 
+    function syncTxenDio2() {
+      const txenVal = document.getElementById('lora_txen').value.trim();
+      if (txenVal !== '') {
+        document.getElementById('dio2_rf_switch').value = '0';
+      }
+    }
+
     function updateHints() {
       const mcu = document.getElementById('mcu').value;
       const hint = document.getElementById('mcu_hint');
       if (mcu === 'nrf52840') {
         hint.innerHTML = '💡 <b>nRF52840:</b> Пины указываются в формате Arduino/Adafruit (например, P0.24 = <b>24</b>, P1.04 = 32 + 4 = <b>36</b>). На выходе соберётся готовый файл <b>firmware.uf2</b>.';
       } else {
-        hint.innerHTML = '💡 <b>ESP32:</b> Указываются стандартные номера GPIO (например, GPIO12 = <b>12</b>). На выходе соберутся <b>firmware.bin</b> и <b>firmware-update.bin</b>.';
+        hint.innerHTML = '💡 <b>ESP32:</b> Указываются стандартные номера GPIO (например, GPIO18 = <b>18</b>). На выходе соберутся <b>firmware.bin</b> и <b>firmware-update.bin</b>.';
       }
     }
 
@@ -229,6 +233,7 @@
         const cfg = JSON.parse(savedCfg);
         FIELDS.forEach(id => { if (cfg[id] !== undefined) document.getElementById(id).value = cfg[id]; });
       }
+      syncTxenDio2();
       updateHints();
       toggleFields();
     }
@@ -300,6 +305,7 @@
         reader.onload = ev => {
           const cfg = JSON.parse(ev.target.result);
           FIELDS.forEach(id => { if (cfg[id] !== undefined) document.getElementById(id).value = cfg[id]; });
+          syncTxenDio2();
           updateHints();
           toggleFields();
         };
