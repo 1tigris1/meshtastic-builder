@@ -121,16 +121,20 @@ else:
 
 lines.append("")
 
-# --- 3. Радиомодули (E22 / E220 / SX126x / SX127x) ---
-for macro, key in [
-    ("LORA_SCK", "lora_sck"),
-    ("LORA_MISO", "lora_miso"),
-    ("LORA_MOSI", "lora_mosi"),
-    ("LORA_CS", "lora_cs"),
-    ("LORA_RESET", "lora_rst"),
-]:
+# --- 3. Шина SPI и Радиомодули (E22 / E220 / SX126x / SX127x) ---
+spi_pairs = [
+    ("LORA_SCK", "PIN_SPI_SCK", "lora_sck"),
+    ("LORA_MISO", "PIN_SPI_MISO", "lora_miso"),
+    ("LORA_MOSI", "PIN_SPI_MOSI", "lora_mosi"),
+    ("LORA_CS", "PIN_SPI_SS", "lora_cs"),
+]
+for lora_macro, std_macro, key in spi_pairs:
     if config.get(key):
-        lines.append(f"#define {macro} {config[key]}")
+        lines.append(f"#define {lora_macro} {config[key]}")
+        lines.append(f"#define {std_macro} {config[key]}")
+
+if config.get("lora_rst"):
+    lines.append(f"#define LORA_RESET {config['lora_rst']}")
 
 radio = config.get("radio", "e22_900")
 if radio in ("e22_900", "e22_400", "e220_llcc68", "sx1262"):
@@ -157,17 +161,20 @@ if radio in ("e22_900", "e22_400", "e220_llcc68", "sx1262"):
     lines.append(f"#define SX126X_RXEN {rxen}")
     lines.append(f"#define SX126X_TXEN {txen}")
 
-    if str(config.get("dio2_rf_switch")).lower() in ("1", "true", "yes"):
+    # Если задан физический TXEN или DIO2 явно выключен — запрещаем DIO2_AS_RF_SWITCH
+    dio2_enabled = str(config.get("dio2_rf_switch")).lower() in ("1", "true", "yes")
+    if dio2_enabled and txen == "RADIOLIB_NC":
         lines.append("#define SX126X_DIO2_AS_RF_SWITCH")
+    else:
+        lines.append("#undef SX126X_DIO2_AS_RF_SWITCH")
 
     tcxo = str(config.get("tcxo_voltage") or "1.8").strip()
     if tcxo not in ("0", "0.0", "none", "None", "false", "False"):
         lines.append(f"#define SX126X_DIO3_TCXO_VOLTAGE {tcxo}")
+        lines.append("#define TCXO_OPTIONAL")
 
+    # Ограничение выходной мощности чипа до 22 dBm для 1-ваттных модулей E22-30S
     if str(config.get("e22_high_power")).lower() in ("1", "true", "yes"):
-        lines.append("#define SX126X_MAX_POWER 22")
-    # Ограничение входной мощности для E22-30S (1W модули с внутренним PA)
-    if config.get("e22_high_power") == "1":
         lines.append("#define SX126X_MAX_POWER 22")
 else:
     lines.append("#define USE_SX1276")
@@ -184,7 +191,7 @@ if extra:
 
 (variant_dir / "variant.h").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-# Для nRF52840 требуется базовый variant.cpp (берём из стандартного diy варианта)
+# Для nRF52840 копируем базовый variant.cpp
 extra_build_flags = ""
 if mcu == "nrf52840":
     extra_build_flags = "\n  -I variants/nrf52840/diy/nrf52840_promicro"
@@ -202,7 +209,7 @@ build_flags =
 """
 (variant_dir / "platformio.ini").write_text(pio_ini, encoding="utf-8")
 
-# Добавляем наш variant внутрь существующего списка extra_configs в корневом platformio.ini
+# Регистрируем наш variant в корневом platformio.ini Meshtastic
 root_pio = Path("meshtastic-src/platformio.ini")
 root_pio_text = root_pio.read_text(encoding="utf-8")
 if "extra_configs =" in root_pio_text:
